@@ -4,7 +4,7 @@ require 'date'
 
 vaughns = []
 hollys = []
-Dir.glob("amli*json").each do |filename|
+Dir.glob("data/amli*json").each do |filename|
   map = JSON.parse(File.read filename)
   vaughns.concat map.first[1].select{|o| o.has_value? "Vaughn"}
   hollys.concat map.first[1].select{|o| o.has_value? "Holly"}
