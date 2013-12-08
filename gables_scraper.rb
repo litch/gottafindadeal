@@ -1,9 +1,8 @@
-gables = {
-  gables: 'https://www.udr.com/floorplan.aspx?pid=35351'
-}
-
-require 'selenium-webdriver'
+require 'nokogiri'
 require 'awesome_print'
+require 'open-uri'
+require 'date'
+require 'json'
 
 class String
   def underscore
@@ -14,34 +13,70 @@ class String
 end
 
 
-class UdrScraper
-  attr_accessor :url, :property_name
+class GablesScraper
+  attr_accessor :property_id, :property_name
 
-  def initialize(url, property_name)
-    self.url = url
+  def initialize(property_id, property_name)
+    self.property_id = property_id
     self.property_name = property_name
   end
 
   def scrape
-    driver = Selenium::WebDriver.for :firefox
-    driver.navigate.to url
-    wait = Selenium::WebDriver::Wait.new(:timeout => 10) # seconds
-    wait.until {driver.find_element(id: 'page-title')}
-    p "Looks like load is done!"
     info = []
-    driver.find_elements(class: 'floorplan-description').each do |floorplan_cell|
-      floor_plan_name = floorplan_cell.find(tag_name: 'h2').text.split('-')[0].strip
-      bed_bath_count = floorplan_cell.find(tag_name: 'h2').text.split('-')[1].strip
-      floorplan_cell.find_element(tag_name: 'tbody').find_elements(tag_name: 'tr').each do |unit|
-        unit_summary = {floor_plan_name: floor_plan_name, property_name: property_name, retrieved: Time.now, square_footage: square_footage, bed_bath_count: bed_bath_count}
-        unit_summary['text'] = unit.text
-      end
+    page = 1
+    prev_page= nil
+    while doc = Nokogiri::HTML(open(url_for(property_id, page)))
+      p url_for(property_id, page)
+      p doc
+      doc.css('.floorplan').size
+
+      break if prev_page == doc
+
+      info.concat(parse_page(doc))
+      prev_page = doc
+      page += 1
     end
-    driver.close
     info
   end
 
+  def url_for(property_id, page)
+    "http://gables.com/find/floorplans_serp?utf8=%E2%9C%93&floorplans=any&query=Austin&property_id=#{property_id}&page=#{page}"
+  end
+
+  def parse_page(doc)
+    units = []
+    doc.css('.floorplan').each do |floorplan|
+      floorplan.css('caption').first.content.scan(/^(\w+)\s(.+)\s\/\s(.+)$/)
+      floor_plan_name = $1
+      bed_bath_count = "#{$2}, #{$3}"
+      unit_summary = {floor_plan_name: floor_plan_name, property_name: property_name, retrieved: Time.now, bed_bath_count: bed_bath_count}
+      floorplan.css('tbody tr').each do |unit|
+        cells = unit.content.split(/\n/)
+        unit_specs = {building: cells[1], floor: cells[2], unit: cells[3], square_footage: cells[5], rent: cells[7], available: cells[8]}
+        units << unit_summary.merge(unit_specs)
+      end
+    end
+    units
+  end
 end
 
+results = {}
 
-ap UdrScraper.new(ashton[:ashton], :ashton).scrape
+gables = {
+  gables_fifth_st_commons: 931,
+  gables_central_park: 'http://gables.com/find/floorplans_serp?utf8=%E2%9C%93&floorplans=any&query=Austin&property_id=51&page=1',
+  gables_grandview: 'http://gables.com/find/floorplans_serp?utf8=%E2%9C%93&floorplans=any&query=Austin&property_id=121&page=1',
+  gables_at_the_terrace: 'http://gables.com/find/floorplans_serp?utf8=%E2%9C%93&floorplans=any&query=Austin&property_id=281&page=1',
+  gables_west_ave: 'http://gables.com/find/floorplans_serp?utf8=%E2%9C%93&floorplans=any&query=Austin&property_id=361&page=1',
+  gables_pressler: 'http://gables.com/find/floorplans_serp?utf8=%E2%9C%93&floorplans=any&query=Austin&property_id=1071&page=1',
+  gables_park_plaza: 'http://gables.com/find/floorplans_serp?utf8=%E2%9C%93&floorplans=any&query=Austin&property_id=1191&page=1',
+
+
+
+}
+
+gables.each do |property_name, url|
+  results[property_name] = GablesScraper.new(url, property_name).scrape
+end
+
+File.open("gables_#{Date.today.iso8601}.json", 'w') { |file| JSON.dump(results, file) }
