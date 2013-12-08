@@ -11,7 +11,6 @@ class String
   end
 end
 
-
 class AmliScraper
   attr_accessor :url, :property_name
 
