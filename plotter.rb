@@ -12,23 +12,24 @@ end
 
 data_table = GoogleVisualr::DataTable.new
 data_table.new_column('date', 'Date' )
-data_table.new_column('number', 'Starting Rent')
+data_table.new_column('number', 'Vaughn Rent')
+data_table.new_column('number', 'Holly Rent')
 
 vaughns.each do |vaughn|
   date = Date.parse(vaughn['retrieved'])
   rent = vaughn['starting_rent'].gsub(/\D/,'').to_i
   unit = vaughn['unit']
-  data_table.add_row([date, {v: rent, f: "Vaughn - Unit: #{unit || '?'}, Rent: $#{rent}"}])
+  data_table.add_row([date, {v: rent, f: "Vaughn - Unit: #{unit || '?'}, Rent: $#{rent}"}, nil])
 end
 
 hollys.each do |holly|
   date = Date.parse(holly['retrieved'])
   rent = holly['starting_rent'].gsub(/\D/,'').to_i
   unit = holly['unit']
-  data_table.add_row([date, {v: rent, f: "Holly - Unit: #{unit || '?'}, Rent: $#{rent}"}])
+  data_table.add_row([date, nil,{v: rent, f: "Holly - Unit: #{unit || '?'}, Rent: $#{rent}"}])
 end
 
-opts   = { :width => 800, :height => 600, :title => 'Vaughn Unit Prices',
+opts   = { :width => 800, :height => 600, :title => 'AMLI Unit Prices',
              :hAxis => { :title => 'Date'},
              :vAxis => { :title => 'Price'},
              :legend => 'none' }
