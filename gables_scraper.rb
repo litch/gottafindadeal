@@ -31,12 +31,7 @@ class GablesScraper
       rescue
         break
       end
-      p url_for(property_id, page)
-      p doc
-      doc.css('.floorplan').size
-
       break if prev_first_plan == first_plan
-
       info.concat(parse_page(doc))
       prev_first_plan = first_plan
       page += 1
@@ -76,8 +71,6 @@ gables = {
   gables_pressler: 'http://gables.com/find/floorplans_serp?utf8=%E2%9C%93&floorplans=any&query=Austin&property_id=1071&page=1',
   gables_park_plaza: 'http://gables.com/find/floorplans_serp?utf8=%E2%9C%93&floorplans=any&query=Austin&property_id=1191&page=1',
   gables_park_tower: 'http://gables.com/find/floorplans_serp?utf8=%E2%9C%93&floorplans=any&query=Austin&property_id=2161&page=1'
-
-
 }
 
 gables.each do |property_name, url|
