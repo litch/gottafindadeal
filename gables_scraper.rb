@@ -24,16 +24,21 @@ class GablesScraper
   def scrape
     info = []
     page = 1
-    prev_page= nil
+    prev_first_plan= nil
     while doc = Nokogiri::HTML(open(url_for(property_id, page)))
+      begin
+        first_plan = doc.css('.floorplan').css('.thumb').first.children.css('a').first.attributes['href'].value
+      rescue
+        break
+      end
       p url_for(property_id, page)
       p doc
       doc.css('.floorplan').size
 
-      break if prev_page == doc
+      break if prev_first_plan == first_plan
 
       info.concat(parse_page(doc))
-      prev_page = doc
+      prev_first_plan = first_plan
       page += 1
     end
     info
@@ -70,7 +75,7 @@ gables = {
   gables_west_ave: 'http://gables.com/find/floorplans_serp?utf8=%E2%9C%93&floorplans=any&query=Austin&property_id=361&page=1',
   gables_pressler: 'http://gables.com/find/floorplans_serp?utf8=%E2%9C%93&floorplans=any&query=Austin&property_id=1071&page=1',
   gables_park_plaza: 'http://gables.com/find/floorplans_serp?utf8=%E2%9C%93&floorplans=any&query=Austin&property_id=1191&page=1',
-
+  gables_park_tower: 'http://gables.com/find/floorplans_serp?utf8=%E2%9C%93&floorplans=any&query=Austin&property_id=2161&page=1'
 
 
 }
@@ -79,4 +84,4 @@ gables.each do |property_name, url|
   results[property_name] = GablesScraper.new(url, property_name).scrape
 end
 
-File.open("gables_#{Date.today.iso8601}.json", 'w') { |file| JSON.dump(results, file) }
+File.open("data/gables_#{Date.today.iso8601}.json", 'w') { |file| JSON.dump(results, file) }
