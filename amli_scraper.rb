@@ -1,16 +1,3 @@
-require 'selenium-webdriver'
-require 'awesome_print'
-require 'date'
-require 'json'
-
-class String
-  def underscore
-    self.gsub(/\W+/,'_').
-    tr("-", "_").
-    downcase
-  end
-end
-
 class AmliScraper
   attr_accessor :url, :property_name
 
@@ -51,21 +38,3 @@ class AmliScraper
     info
   end
 end
-
-results = {}
-
-amlis = {
-  amli_on_2nd: "http://www.amli.com/apartments/austin/downtown/austin/2nd-street/floorplans",
-  amli_5350: "http://www.amli.com/apartments/austin/central-austin/austin/5350/floorplans",
-  amli_downtown: 'http://www.amli.com/apartments/austin/2nd-street-district/austin/downtown/floorplans',
-  amli_south_shore: 'http://www.amli.com/apartments/austin/central-east-austin/austin/south-shore/floorplans',
-  amli_lantana_hills: 'http://www.amli.com/apartments/austin/southwest-austin/austin/lantana-hills/floorplans',
-  amli_300: 'http://www.amli.com/apartments/austin/downtown/austin/300/floorplans',
-  amli_eastside: 'http://www.amli.com/apartments/austin/downtown/austin/eastside/floorplans'
-}
-
-amlis.each do |property_name, url|
-  results[property_name] = AmliScraper.new(url, property_name).scrape
-end
-
-File.open("data/amli_#{Date.today.iso8601}.json", 'w') { |file| JSON.dump(results, file) }

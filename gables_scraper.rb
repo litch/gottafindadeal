@@ -4,15 +4,6 @@ require 'open-uri'
 require 'date'
 require 'json'
 
-class String
-  def underscore
-    self.gsub(/\W+/,'_').
-    tr("-", "_").
-    downcase
-  end
-end
-
-
 class GablesScraper
   attr_accessor :property_id, :property_name
 
@@ -59,22 +50,3 @@ class GablesScraper
     units
   end
 end
-
-results = {}
-
-gables = {
-  gables_fifth_st_commons: 931,
-  gables_central_park: 'http://gables.com/find/floorplans_serp?utf8=%E2%9C%93&floorplans=any&query=Austin&property_id=51&page=1',
-  gables_grandview: 'http://gables.com/find/floorplans_serp?utf8=%E2%9C%93&floorplans=any&query=Austin&property_id=121&page=1',
-  gables_at_the_terrace: 'http://gables.com/find/floorplans_serp?utf8=%E2%9C%93&floorplans=any&query=Austin&property_id=281&page=1',
-  gables_west_ave: 'http://gables.com/find/floorplans_serp?utf8=%E2%9C%93&floorplans=any&query=Austin&property_id=361&page=1',
-  gables_pressler: 'http://gables.com/find/floorplans_serp?utf8=%E2%9C%93&floorplans=any&query=Austin&property_id=1071&page=1',
-  gables_park_plaza: 'http://gables.com/find/floorplans_serp?utf8=%E2%9C%93&floorplans=any&query=Austin&property_id=1191&page=1',
-  gables_park_tower: 'http://gables.com/find/floorplans_serp?utf8=%E2%9C%93&floorplans=any&query=Austin&property_id=2161&page=1'
-}
-
-gables.each do |property_name, url|
-  results[property_name] = GablesScraper.new(url, property_name).scrape
-end
-
-File.open("data/gables_#{Date.today.iso8601}.json", 'w') { |file| JSON.dump(results, file) }
