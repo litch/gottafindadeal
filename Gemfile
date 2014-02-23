@@ -4,3 +4,5 @@ gem 'awesome_print'
 gem 'selenium-webdriver'
 gem 'nokogiri'
 gem 'google_visualr'
+
+gem 'twitter'
